@@ -231,7 +231,6 @@ void RLPolicyRuntime::configureControl(const PolicyConfig & policy,
 
   kp_ = pdGainsRatio_ * kpBase_;
   kd_ = std::sqrt(pdGainsRatio_) * kdBase_;
-
   if(torqueTask)
   {
     torqueTask->setStiffness(kp_);

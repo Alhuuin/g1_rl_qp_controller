@@ -114,6 +114,8 @@ struct G1RLQPController_DLLAPI G1RLQPController : public mc_control::fsm::Contro
 
   RLStateRunner rlStateRunner;
 
+  std::pair<sva::PTransformd, Eigen::Vector3d>  createContactAnchor(const mc_rbdyn::Robot & anchorRobot);
+
 private:
   mc_rtc::Configuration config_;
 
@@ -156,6 +158,9 @@ private:
   double lambda_selfCollision_ = 200.0;
 
   rlqp::RLPolicyRuntime rlRuntime_;
+
+  // Anchor from for tilt estimation
+  sva::PTransformd contactAnchorTf_;
 
   // --- Velocity Cmd Params ---
   std::vector<bool> DirectionButtons = std::vector<bool>(4, false); // Up, Down, Left, Right

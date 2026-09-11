@@ -168,11 +168,13 @@ PolicyConfig PolicyConfig::load(const std::string & policyFolder, std::vector<st
     }
     out.pdGainsRatio = control("pd_gains_ratio", 1.0);
 
+    VelocityCommand vel_cmd{0.4, 0.4};
     if(hasCmdVelSpeed)
     {
-      VelocityCommand vel_cmd{control("vel_cmd_speed")("xy", 0.4), control("vel_cmd_speed")("yaw", 0.4)};
-      out.velCmd = vel_cmd;
+      vel_cmd.xy = control("vel_cmd_speed")("xy", 0.4);
+      vel_cmd.yaw = control("vel_cmd_speed")("yaw", 0.4);
     }
+    out.velCmd = vel_cmd;
 
     kp_map = control("kp", std::map<std::string, double>());
     kd_map = control("kd", std::map<std::string, double>());

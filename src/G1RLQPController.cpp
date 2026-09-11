@@ -198,6 +198,10 @@ void G1RLQPController::initializeRobotBasics()
   robotName_ = robot().name();
   jointNames = robot().refJointOrder();
   nbActuatedJoints = static_cast<int>(jointNames.size());
+  if(!datastore().has("anchorFrameFunction"))
+  {
+    datastore().make_call("anchorFrameFunction", [this](const mc_rbdyn::Robot & real_robot) {return createContactAnchor(real_robot);});
+  }
 }
 
 bool G1RLQPController::byPassQPControl()
@@ -457,4 +461,31 @@ void G1RLQPController::computeLimits()
         tauLimitLow);
     }
   }
+}
+
+std::pair<sva::PTransformd, Eigen::Vector3d> G1RLQPController::createContactAnchor(const mc_rbdyn::Robot & anchorRobot)
+{
+  sva::PTransformd X_foot_r = anchorRobot.bodyPosW("right_ankle_roll_link");
+  sva::PTransformd X_foot_l = anchorRobot.bodyPosW("left_ankle_roll_link");
+
+  sva::MotionVecd v_foot_r = anchorRobot.bodyVelW("right_ankle_roll_link");
+  sva::MotionVecd v_foot_l = anchorRobot.bodyVelW("left_ankle_roll_link");
+
+  int right_knee_index = int(robot().jointIndexByName("right_knee_joint")) + 5;
+  int left_knee_index = int(robot().jointIndexByName("left_knee_joint")) + 5;
+  double tau_ext_knee_r =  abs(robot().externalTorques()[right_knee_index]);
+  double tau_ext_knee_l =  abs(robot().externalTorques()[left_knee_index]);
+  double leftFootRatio = tau_ext_knee_l/(tau_ext_knee_r+tau_ext_knee_l);
+  if(tau_ext_knee_r + tau_ext_knee_l < 0.02)
+  {
+    leftFootRatio = 0.5;
+  }
+         
+  Eigen::VectorXd w_r = X_foot_r.translation();
+  Eigen::VectorXd w_l = X_foot_l.translation();
+  Eigen::VectorXd contact_anchor = (w_r * (1 - leftFootRatio) + w_l * leftFootRatio)  ;
+  Eigen::VectorXd anchor_vel = (v_foot_r.linear() * (1 - leftFootRatio) + v_foot_l.linear() * leftFootRatio);
+  contactAnchorTf_ = sva::PTransformd(Eigen::Matrix3d::Identity(), contact_anchor); 
+
+  return {contactAnchorTf_, anchor_vel};
 }

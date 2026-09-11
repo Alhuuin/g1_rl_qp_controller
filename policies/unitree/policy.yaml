@@ -1,0 +1,164 @@
+# Full policy configuration reference.
+# Every policy-level field currently accepted by the controller is represented.
+
+# Optional. Defaults to the policy directory name.
+name: unitree
+
+# Optional. Defaults to <name>.onnx.
+onnx: policy.onnx
+
+action:
+  # Required. Joint group defining the ONNX action vector order and size.
+  joints: all
+
+  # Optional. Defaults to action.joints. Used when only a subset of joints should be applied (ex: policy outputs all joints while only legs should be used)
+  # controlled_joints: joint_subset
+
+  # Optional. May be either one scalar for every joint...
+  # scale: 1.0
+  # ...or a complete or partial per-joint map. Unspecified joints use 1.0.
+  scale:
+    left_hip_pitch_joint: 0.55
+    left_hip_roll_joint: 0.35
+    left_hip_yaw_joint: 0.55
+    left_knee_joint: 0.35
+    left_ankle_pitch_joint: 0.44
+    left_ankle_roll_joint: 0.44
+    right_hip_pitch_joint: 0.55
+    right_hip_roll_joint: 0.35
+    right_hip_yaw_joint: 0.55
+    right_knee_joint: 0.35
+    right_ankle_pitch_joint: 0.44
+    right_ankle_roll_joint: 0.44
+    waist_yaw_joint: 0.55
+    waist_roll_joint: 0.44
+    waist_pitch_joint: 0.44
+    left_shoulder_pitch_joint: 0.44
+    left_shoulder_roll_joint: 0.44
+    left_shoulder_yaw_joint: 0.44
+    left_elbow_joint: 0.44
+    left_wrist_roll_joint: 0.44
+    left_wrist_pitch_joint: 0.07
+    left_wrist_yaw_joint: 0.07
+    right_shoulder_pitch_joint: 0.44
+    right_shoulder_roll_joint: 0.44
+    right_shoulder_yaw_joint: 0.44
+    right_elbow_joint: 0.44
+    right_wrist_roll_joint: 0.44
+    right_wrist_pitch_joint: 0.07
+    right_wrist_yaw_joint: 0.07
+
+  # Optional. When present, this map must contain every controller joint.
+  q0:
+    left_hip_pitch_joint: -0.1 
+    left_hip_roll_joint: 0
+    left_hip_yaw_joint: 0
+    left_knee_joint: 0.3
+    left_ankle_pitch_joint: -0.2 
+    left_ankle_roll_joint: 0
+    right_hip_pitch_joint: -0.1
+    right_hip_roll_joint: 0
+    right_hip_yaw_joint: 0
+    right_knee_joint: 0.3
+    right_ankle_pitch_joint: -0.2
+    right_ankle_roll_joint: 0
+    waist_yaw_joint: 0
+    waist_roll_joint: 0
+    waist_pitch_joint: 0
+    left_shoulder_pitch_joint: 0.35 
+    left_shoulder_roll_joint: 0.18
+    left_shoulder_yaw_joint: 0
+    left_elbow_joint: 0.87
+    left_wrist_roll_joint: 0
+    left_wrist_pitch_joint: 0
+    left_wrist_yaw_joint: 0
+    right_shoulder_pitch_joint: 0.35
+    right_shoulder_roll_joint: -0.18
+    right_shoulder_yaw_joint: 0
+    right_elbow_joint: 0.87
+    right_wrist_roll_joint: 0
+    right_wrist_pitch_joint: 0
+    right_wrist_yaw_joint: 0
+
+control:
+  # Optional. Defaults to true.
+  use_QP: true
+
+  # Optional policy period. Defaults to 0.02 s.
+  # Specify either one of period_s and frequency_hz.
+  period_s: 0.02
+  # frequency_hz: 50.0
+
+  # Optional. Defaults to 1.0.
+  pd_gains_ratio: 1.0
+  
+  # Optional.
+  vel_cmd_speed:
+    xy: 0.5
+    yaw: 1.0
+
+  # Optional unless a phase observation is used. Defaults to 1.0 s.
+  phase_period: 0.6
+
+  # Required maps. They must contain every joint in robot().refJointOrder().
+  kp:
+    left_hip_pitch_joint: 40.2
+    left_hip_roll_joint: 99.1
+    left_hip_yaw_joint: 40.2
+    left_knee_joint: 99.1
+    left_ankle_pitch_joint: 28.5
+    left_ankle_roll_joint: 28.5
+    right_hip_pitch_joint: 40.2
+    right_hip_roll_joint: 99.1
+    right_hip_yaw_joint: 40.2
+    right_knee_joint: 99.1
+    right_ankle_pitch_joint: 28.5
+    right_ankle_roll_joint: 28.5
+    waist_yaw_joint: 40.2
+    waist_roll_joint: 28.5
+    waist_pitch_joint: 28.5
+    left_shoulder_pitch_joint: 14.3
+    left_shoulder_roll_joint: 14.3
+    left_shoulder_yaw_joint: 14.3
+    left_elbow_joint: 14.3
+    left_wrist_roll_joint: 14.3
+    left_wrist_pitch_joint: 16.8
+    left_wrist_yaw_joint: 16.8
+    right_shoulder_pitch_joint: 14.3
+    right_shoulder_roll_joint: 14.3
+    right_shoulder_yaw_joint: 14.3
+    right_elbow_joint: 14.3
+    right_wrist_roll_joint: 14.3
+    right_wrist_pitch_joint: 16.8
+    right_wrist_yaw_joint: 16.8
+  kd:
+    left_hip_pitch_joint: 2.6
+    left_hip_roll_joint: 6.3
+    left_hip_yaw_joint: 2.6
+    left_knee_joint: 6.3
+    left_ankle_pitch_joint: 1.8
+    left_ankle_roll_joint: 1.8
+    right_hip_pitch_joint: 2.6
+    right_hip_roll_joint: 6.3
+    right_hip_yaw_joint: 2.6
+    right_knee_joint: 6.3
+    right_ankle_pitch_joint: 1.8
+    right_ankle_roll_joint: 1.8
+    waist_yaw_joint: 2.6
+    waist_roll_joint: 1.8
+    waist_pitch_joint: 1.8
+    left_shoulder_pitch_joint: 0.9
+    left_shoulder_roll_joint: 0.9
+    left_shoulder_yaw_joint: 0.9
+    left_elbow_joint: 0.9
+    left_wrist_roll_joint: 0.9
+    left_wrist_pitch_joint: 1.1
+    left_wrist_yaw_joint: 1.1
+    right_shoulder_pitch_joint: 0.9
+    right_shoulder_roll_joint: 0.9
+    right_shoulder_yaw_joint: 0.9
+    right_elbow_joint: 0.9
+    right_wrist_roll_joint: 0.9
+    right_wrist_pitch_joint: 1.1
+    right_wrist_yaw_joint: 1.1
+    

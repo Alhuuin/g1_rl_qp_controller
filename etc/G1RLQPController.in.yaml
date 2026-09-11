@@ -16,8 +16,7 @@ robots:
     module: env/ground
 
 robot:
-  # TODO(robot): adjust the body used by floating-base observations.
-  base_body: base_link
+  base_body: pelvis
   # realRobot is usually appropriate on hardware; robot can be useful in simulation.
   observation_source: realRobot
 
@@ -31,7 +30,6 @@ collisions:
 #     contactType: acceleration
 #   - type: compoundJoint
 
-# TODO(robot): adjust the ObserverPipeline
 ObserverPipelines:
   name: MainPipeline
   gui: true
@@ -40,16 +38,25 @@ ObserverPipelines:
     - type: Encoder
       config:
         velocity: encoderVelocities
-    # Example BodySensor observer:
-    # - type: BodySensor
-    #   update: true
-    #   bodySensor: FloatingBase
-    # Example external torque observer (robo-specific adjustments needed):
-    # - type: ExternalForcesObserver
-    #   estimation_method: MomentumObserver
-    #   use_forces_from_ft_sensors: false
-    #   residual_gain: 100
-    #   torque_source_type: CommandedTorque
+    - type: BodySensor
+      update: true
+      bodySensor: FloatingBase
+    - type: Tilt
+      required: true
+      update: true
+      config:
+        anchorFrameFunction: anchorFrameFunction
+        filterGains:
+          initAlpha: 2
+          initBeta: 2
+          initGamma: 1
+          finalAlpha: 2
+          finalBeta: 2
+    - type: ExternalForcesObserver
+      estimation_method: MomentumObserver
+      use_forces_from_ft_sensors: false
+      residual_gain: 100
+      torque_source_type: CommandedTorque
 
 states: {}
 transitions:
@@ -57,4 +64,4 @@ transitions:
 init: G1RLQPController_Initial
 
 policies_root: "@CMAKE_CURRENT_SOURCE_DIR@/policies"
-default_policy: policyName1
+default_policy: unitree
