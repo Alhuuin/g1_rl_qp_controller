@@ -135,6 +135,9 @@ private:
   bool byPassQPControl();
   /** @brief Log warnings when joint position/velocity/torque limits are exceeded. */
   void computeLimits();
+  void updateDynamicConstraints();
+  void updateSelfCollisionConstraints();
+  void updateConstraints();
 
 private:
   bool printLimits_ = true;
