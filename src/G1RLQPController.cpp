@@ -19,14 +19,9 @@ G1RLQPController::G1RLQPController(mc_rbdyn::RobotModulePtr rm,
   config_ = config;
 
   //Initialize Constraints
-  // TODO(robot): review which constraints are valid for the selected robot.
   // These defaults provide joint-limit and self-collision protection
-  selfCollisionConstraint->setCollisionsDampers(solver(), {zeta_selfCollision_, lambda_selfCollision_});
-  solver().removeConstraintSet(dynamicsConstraint);
-  dynamicsConstraint = mc_rtc::unique_ptr<mc_solver::DynamicsConstraint>(
-    new mc_solver::DynamicsConstraint(robots(), 0, {diPercent_, dsPercent_, 0.0, zeta_jointLimit_, lambda_jointLimit_}, velPercent_, true));
-  solver().addConstraintSet(dynamicsConstraint);
-
+  updateConstraints();
+  
   // Remove the default posture task created by the FSM
   solver().removeTask(getPostureTask(robot().name()));
   // Initialize Task
@@ -307,7 +302,54 @@ void G1RLQPController::addGui()
     }),
     mc_rtc::gui::Label("Print joint limits", [this]() {
       return printLimits_ ? "Enabled" : "Disabled";
-    }));
+    }),
+    mc_rtc::gui::NumberInput(
+      "Zeta self-collision",
+      [this]() { return zeta_selfCollision_; },
+      [this](double v) { 
+        zeta_selfCollision_ = v;
+        updateSelfCollisionConstraints();
+      }),
+    mc_rtc::gui::NumberInput(
+      "Lambda self-collision",
+      [this]() { return lambda_selfCollision_; },
+      [this](double v) { 
+        lambda_selfCollision_ = v;
+        updateSelfCollisionConstraints();
+      }),
+    mc_rtc::gui::NumberInput(
+      "Zeta joint limits",
+      [this]() { return zeta_jointLimit_; },
+      [this](double v) { 
+        zeta_jointLimit_ = v;
+        updateDynamicConstraints();
+      }),
+    mc_rtc::gui::NumberInput(
+      "Lambda joint limits",
+      [this]() { return lambda_jointLimit_; },
+      [this](double v) {
+        lambda_jointLimit_ = v;
+        updateDynamicConstraints();
+      }),
+    mc_rtc::gui::NumberInput(
+      "Joint velocity limit (fraction of max)",
+      [this]() { return velPercent_; },
+      [this](double v) {
+        velPercent_ = std::min(v, 0.999);
+        mc_rtc::log::info("[G1RLQPController] Joint velocity limit fraction set to {}", velPercent_);
+        updateDynamicConstraints();
+      }),
+    mc_rtc::gui::NumberInput(
+      "Joint limit stop distance (fraction of range)",
+      [this]() { return dsPercent_; },
+      [this](double v) {
+        dsPercent_ = std::min(v, 0.99);
+        diPercent_ = std::min(dsPercent_ * 2.0, 0.999); // Ensure di > ds 
+        mc_rtc::log::info("[G1RLQPController] ds set to {}", dsPercent_);
+        mc_rtc::log::info("[G1RLQPController] di set to {}", diPercent_);
+        updateDynamicConstraints();
+      })
+  );
 
   gui()->addElement(
     {"G1RLQPController", "Runtime"},
@@ -329,7 +371,7 @@ void G1RLQPController::addGui()
             toggleKeyboard = false;
         }),
     mc_rtc::gui::Label(
-        "Current velcity control mode",
+        "Current velocity control mode",
         [this]()
         {
           if(toggleKeyboard)
@@ -488,4 +530,23 @@ std::pair<sva::PTransformd, Eigen::Vector3d> G1RLQPController::createContactAnch
   contactAnchorTf_ = sva::PTransformd(Eigen::Matrix3d::Identity(), contact_anchor); 
 
   return {contactAnchorTf_, anchor_vel};
+}
+
+void G1RLQPController::updateDynamicConstraints()
+{
+  solver().removeConstraintSet(dynamicsConstraint);
+  dynamicsConstraint = mc_rtc::unique_ptr<mc_solver::DynamicsConstraint>(
+    new mc_solver::DynamicsConstraint(robots(), 0, {diPercent_, dsPercent_, 0.0, zeta_jointLimit_, lambda_jointLimit_}, velPercent_, true));
+  solver().addConstraintSet(dynamicsConstraint);
+}
+
+void G1RLQPController::updateSelfCollisionConstraints()
+{
+  selfCollisionConstraint->setCollisionsDampers(solver(), {zeta_selfCollision_, lambda_selfCollision_});
+}
+
+void G1RLQPController::updateConstraints()
+{
+  updateSelfCollisionConstraints();
+  updateDynamicConstraints();
 }
